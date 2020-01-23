@@ -9,7 +9,6 @@ RSpec.describe CsvImport do
     let(:filename) { "spec/fixtures/empty.csv" }
 
     it "sets filename and agency name attribute" do
-      pending
       expect(import.filename).to eq(filename)
       expect(import.agency_name).to eq(agency_name)
     end
