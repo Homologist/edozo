@@ -66,7 +66,7 @@ RSpec.describe CsvImport do
     let(:filename) { "spec/fixtures/missing.csv" }
 
     it "raises an exception with meaningful message" do
-      expect { import.run }.to raise_error(SetupError, "File is missing")
+      expect { import.run }.to raise_error(ImportFile::LocationError, "File is missing")
     end
   end
 
@@ -83,12 +83,24 @@ RSpec.describe CsvImport do
   describe "incorrectly formatted file" do
     let(:filename) { "spec/fixtures/incorrect.csv" }
 
-    it "raises an exception with a meaningful message"
+    it "raises an exception with a meaningful message" do
+      expect { import.run }.to raise_error(ImportFile::FormatError, "File format is incorrect")
+    end
   end
 
   describe "file with some invalid records" do
     let(:filename) { "spec/fixtures/some_invalid_records.csv" }
 
-    it "imports correct records and saves remaining records into corrections directory"
+    it "imports correct records and saves remaining records into corrections directory" do
+      import.run
+
+      expect(Transaction.count).to eq 1
+      expect(Property.count).to eq 1
+      expect(Client.count).to eq 1
+      expect(Agency.count).to eq 1
+      expect(CSV.read("./corrections/error.csv").count).to eq(2)
+
+      File.delete "./corrections/error.csv"
+    end
   end
 end

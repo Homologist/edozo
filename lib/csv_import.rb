@@ -7,12 +7,20 @@ class CsvImport
 
   def run
     records = CSV.foreach(@filename, headers: true)
+    headers = CSV.read(@filename)[0]
+    raise(ImportFile::FormatError.new("File format is incorrect")) if headers.to_a.count != 6
+    return if records.to_a.empty?
     import_id = Digest::SHA256.hexdigest records.to_a.to_s
-    puts records.to_a
-    puts "records"
     Import.create! name: import_id
+
     records.each do |record|
-      next if record.uniq.reject(&:empty?).compact.empty?
+      if record.map{ |line| line.second }.compact.count != 6
+        CSV.open("./corrections/error.csv", "a+") do |csv|
+          csv << record
+        end
+        next
+      end
+
       ActiveRecord::Base.transaction do
         client = Client.create! name: record[5]
         agency = Agency.create! name: agency_name
@@ -22,8 +30,9 @@ class CsvImport
           raise ActiveRecord::Rollback
       end
     end
+
     rescue Errno::ENOENT
-      raise SetupError
+      raise ImportFile::LocationError
   end
 
   def filename
@@ -35,8 +44,14 @@ class CsvImport
   end
 end
 
-class SetupError < StandardError
+class ImportFile < StandardError
+end
+
+class ImportFile::LocationError < StandardError
   def message
     "File is missing"
   end
+end
+
+class ImportFile::FormatError < StandardError
 end
