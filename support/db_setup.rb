@@ -13,6 +13,7 @@ ActiveRecord::Schema.define do
     t.string :type
     t.timestamps
   end
+
   create_table :transactions, force: true do |t|
     t.string :type
     t.references :agency
@@ -21,6 +22,7 @@ ActiveRecord::Schema.define do
     t.datetime :date
     t.timestamps
   end
+  add_index :transactions, [:type, :agency_id, :client_id, :property_id, :date], unique: true, name: "ref"
 
   create_table :clients, force: true do |t|
     t.string :name
@@ -34,6 +36,7 @@ ActiveRecord::Schema.define do
 
   class ApplicationRecord < ActiveRecord::Base
     self.abstract_class = true
+    self.inheritance_column = :_type_disabled
   end
 
   class Property < ApplicationRecord
