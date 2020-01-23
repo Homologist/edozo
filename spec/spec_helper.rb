@@ -20,8 +20,9 @@ RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.
+  DatabaseCleaner.strategy = :truncation
   config.before(:each) do
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean 
   end
 
   config.expect_with :rspec do |expectations|

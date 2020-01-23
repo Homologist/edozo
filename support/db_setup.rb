@@ -22,7 +22,7 @@ ActiveRecord::Schema.define do
     t.datetime :date
     t.timestamps
   end
-  add_index :transactions, [:type, :agency_id, :client_id, :property_id, :date], unique: true, name: "ref"
+  add_index :transactions, [:type, :agency, :client, :property, :date], unique: true, name: "ref"
 
   create_table :clients, force: true do |t|
     t.string :name
