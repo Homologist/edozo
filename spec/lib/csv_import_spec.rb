@@ -40,9 +40,14 @@ RSpec.describe CsvImport do
   end
 
   describe "import including multiple transactions" do
-    let(:filename) { "spec/fixtures/multiple_transactions.csv" }
+    let(:filename) { "spec/fixtures/multiple.csv" }
 
-    it "creates only one property with multiple transactions"
+    it "creates only one property with multiple transactions" do
+      import.run
+
+      expect(Property.count).to eq 1
+      expect(Transaction.count).to eq 2
+    end
   end
 
   describe "when running the same import multiple times" do

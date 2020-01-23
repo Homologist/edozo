@@ -13,6 +13,7 @@ ActiveRecord::Schema.define do
     t.string :type
     t.timestamps
   end
+  add_index :properties, [:address, :postcode, :type], unique: true, name: "properties_multiples"
 
   create_table :transactions, force: true do |t|
     t.string :type
@@ -41,6 +42,7 @@ ActiveRecord::Schema.define do
 
   class Property < ApplicationRecord
     has_many :transactions
+    validates  :address, uniqueness: { scope: [:postcode, :type]}
   end
 
   class Transaction < ApplicationRecord
