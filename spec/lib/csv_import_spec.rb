@@ -34,8 +34,10 @@ RSpec.describe CsvImport do
 
     it "creates only one transaction, property, client and agency" do
       import.run
-
       expect(Transaction.count).to eq 1
+      expect(Property.count).to eq 1
+      expect(Client.count).to eq 1
+      expect(Agency.count).to eq 1
     end
   end
 
@@ -53,13 +55,19 @@ RSpec.describe CsvImport do
   describe "when running the same import multiple times" do
     let(:filename) { "spec/fixtures/single.csv" }
 
-    it "creates no transactions and returns meaningful message"
+    it "creates no transactions and returns meaningful message" do
+      import.run
+
+      expect { import.run }.to raise_error(ActiveRecord::RecordInvalid, "Validation failed: Name You are trying to run the same import a second time")
+    end
   end
 
   describe "missing file" do
     let(:filename) { "spec/fixtures/missing.csv" }
 
-    it "raises an exception with meaningful message"
+    it "raises an exception with meaningful message" do
+      expect { import.run }.to raise_error(SetupError, "File is missing")
+    end
   end
 
   describe "empty file" do
