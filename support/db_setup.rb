@@ -21,14 +21,14 @@ ActiveRecord::Schema.define do
     t.references :agency
     t.references :client
     t.references :property
-    t.datetime :date
+    t.string :date
     t.timestamps
   end
 
   add_index :transactions, [:type, :agency, :client, :property, :date], unique: true, name: "ref"
 
   create_table :clients, force: true do |t|
-    t.string :name
+    t.string :name, unique: true
     t.timestamps
   end
 
@@ -38,7 +38,7 @@ ActiveRecord::Schema.define do
   end
 
   create_table :agencies, force: true do |t|
-    t.string :name
+    t.string :name, unique: true
     t.string :import_id, unique: true
     t.timestamps
   end
@@ -61,6 +61,7 @@ ActiveRecord::Schema.define do
 
   class Client < ApplicationRecord
     has_many :transactions
+    validates :name, uniqueness: { message: "You are trying to run the same import a second time" }
   end
 
   class Import < ApplicationRecord
@@ -69,5 +70,6 @@ ActiveRecord::Schema.define do
 
   class Agency < ApplicationRecord
     has_many :transactions
+    validates :name, uniqueness: { message: "Agency already exist" }
   end
 end

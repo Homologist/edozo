@@ -34,10 +34,10 @@ RSpec.describe CsvImport do
 
     it "creates only one transaction, property, client and agency" do
       import.run
-      expect(Transaction.count).to eq 1
       expect(Property.count).to eq 1
       expect(Client.count).to eq 1
       expect(Agency.count).to eq 1
+      expect(Transaction.count).to eq 1
     end
   end
 

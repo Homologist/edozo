@@ -22,10 +22,10 @@ class CsvImport
       end
 
       ActiveRecord::Base.transaction do
-        client = Client.create! name: record[5]
-        agency = Agency.create! name: agency_name
+        client = Client.where(name: record[5]).first || Client.create(name: record[5]) 
+        agency = Agency.where(name: agency_name).first ||  Agency.create(name: agency_name)
         property = Property.create address: record[0], postcode: record[1], type: record[2]
-        Transaction.create type: record[3], date: record[4], client: client, agency: agency, property: property
+        Transaction.create type: record[3], date: sqlite_date(record[4]), client: client, agency: agency, property: property
         rescue ActiveRecord::RecordNotUnique
           raise ActiveRecord::Rollback
       end
@@ -41,6 +41,10 @@ class CsvImport
 
   def agency_name
     @agency_name
+  end
+
+  def sqlite_date(date)
+    "#{date.split('-')[2]}-#{date.split('-')[1]}-#{date.split('-')[0]}"
   end
 end
 
