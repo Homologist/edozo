@@ -13,6 +13,8 @@ ActiveRecord::Schema.define do
     t.string :type
     t.timestamps
   end
+  
+  add_index :properties, [:address, :postcode, :type], unique: true, name: "properties_multiples"
 
   create_table :transactions, force: true do |t|
     t.string :type
@@ -22,15 +24,22 @@ ActiveRecord::Schema.define do
     t.datetime :date
     t.timestamps
   end
-  add_index :transactions, [:type, :agency_id, :client_id, :property_id, :date], unique: true, name: "ref"
+
+  add_index :transactions, [:type, :agency, :client, :property, :date], unique: true, name: "ref"
 
   create_table :clients, force: true do |t|
     t.string :name
     t.timestamps
   end
 
+  create_table :imports, force: true do |t|
+    t.string :name, unique: true
+    t.timestamps
+  end
+
   create_table :agencies, force: true do |t|
     t.string :name
+    t.string :import_id, unique: true
     t.timestamps
   end
 
@@ -41,6 +50,7 @@ ActiveRecord::Schema.define do
 
   class Property < ApplicationRecord
     has_many :transactions
+    validates :address, uniqueness: { scope: [:postcode, :type]}
   end
 
   class Transaction < ApplicationRecord
@@ -51,6 +61,10 @@ ActiveRecord::Schema.define do
 
   class Client < ApplicationRecord
     has_many :transactions
+  end
+
+  class Import < ApplicationRecord
+    validates :name, uniqueness: { message: "You are trying to run the same import a second time" }
   end
 
   class Agency < ApplicationRecord

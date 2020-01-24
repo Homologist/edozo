@@ -34,27 +34,40 @@ RSpec.describe CsvImport do
 
     it "creates only one transaction, property, client and agency" do
       import.run
-
       expect(Transaction.count).to eq 1
+      expect(Property.count).to eq 1
+      expect(Client.count).to eq 1
+      expect(Agency.count).to eq 1
     end
   end
 
   describe "import including multiple transactions" do
-    let(:filename) { "spec/fixtures/multiple_transactions.csv" }
+    let(:filename) { "spec/fixtures/multiple.csv" }
 
-    it "creates only one property with multiple transactions"
+    it "creates only one property with multiple transactions" do
+      import.run
+
+      expect(Property.count).to eq 1
+      expect(Transaction.count).to eq 2
+    end
   end
 
   describe "when running the same import multiple times" do
     let(:filename) { "spec/fixtures/single.csv" }
 
-    it "creates no transactions and returns meaningful message"
+    it "creates no transactions and returns meaningful message" do
+      import.run
+
+      expect { import.run }.to raise_error(ActiveRecord::RecordInvalid, "Validation failed: Name You are trying to run the same import a second time")
+    end
   end
 
   describe "missing file" do
     let(:filename) { "spec/fixtures/missing.csv" }
 
-    it "raises an exception with meaningful message"
+    it "raises an exception with meaningful message" do
+      expect { import.run }.to raise_error(ImportFile::LocationError, "File is missing")
+    end
   end
 
   describe "empty file" do
@@ -70,12 +83,24 @@ RSpec.describe CsvImport do
   describe "incorrectly formatted file" do
     let(:filename) { "spec/fixtures/incorrect.csv" }
 
-    it "raises an exception with a meaningful message"
+    it "raises an exception with a meaningful message" do
+      expect { import.run }.to raise_error(ImportFile::FormatError, "File format is incorrect")
+    end
   end
 
   describe "file with some invalid records" do
     let(:filename) { "spec/fixtures/some_invalid_records.csv" }
 
-    it "imports correct records and saves remaining records into corrections directory"
+    it "imports correct records and saves remaining records into corrections directory" do
+      import.run
+
+      expect(Transaction.count).to eq 1
+      expect(Property.count).to eq 1
+      expect(Client.count).to eq 1
+      expect(Agency.count).to eq 1
+      expect(CSV.read("./corrections/error.csv").count).to eq(2)
+
+      File.delete "./corrections/error.csv"
+    end
   end
 end
